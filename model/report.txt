@@ -1,0 +1,7 @@
+check speakers: 353 positive clips, 316 negative clips
+negative stream: 29.2 minutes
+threshold 0.5: wakes on 96.5% of 'Hey Cerebel'; 111.1 false wakes per hour of talk
+threshold 0.7: wakes on 94.2% of 'Hey Cerebel'; 72.0 false wakes per hour of talk
+threshold 0.8: wakes on 93.1% of 'Hey Cerebel'; 53.5 false wakes per hour of talk
+threshold 0.9: wakes on 89.1% of 'Hey Cerebel'; 30.9 false wakes per hour of talk
+threshold 0.95: wakes on 85.5% of 'Hey Cerebel'; 18.5 false wakes per hour of talk
