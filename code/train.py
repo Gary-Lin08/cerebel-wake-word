@@ -138,10 +138,19 @@ def microphone(audio: np.ndarray) -> np.ndarray:
     return lfilter(b, a, audio).astype(np.float32)
 
 
+# Voices whose output may not be used commercially (see package.py): left out with --commercial.
+NOT_COMMERCIAL = ("en_US-l2arctic", "mac_", "llm_en_US-l2arctic", "llm_mac_")
+
+
 class Sounds:
+    commercial = False
+
     def __init__(self, folder: Path, split: str) -> None:
         pos = sorted((folder / "pos").glob("*.wav"))
         neg = sorted((folder / "neg").glob("*.wav"))
+        if Sounds.commercial:
+            pos = [p for p in pos if not p.stem.startswith(NOT_COMMERCIAL)]
+            neg = [p for p in neg if not p.stem.startswith(NOT_COMMERCIAL)]
         # Speakers kept apart for checking: every tenth Piper speaker and every fifth macOS voice.
         def held(path):
             parts = path.stem.split("_")
@@ -171,7 +180,7 @@ class Sounds:
         if positive:
             words = room(random.choice(self.pos))
             # The detector is asked at the end of the phrase, give or take a little.
-            sound = self.place(words, SAMPLES - random.randint(0, int(0.25 * RATE)))
+            sound = self.place(words, SAMPLES - random.randint(0, int(0.4 * RATE)))
         else:
             kind = random.random()
             if kind < 0.35:  # half a wake word ("Hey ...") must not count
@@ -228,6 +237,7 @@ def main() -> int:
     parser.add_argument("out")
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--steps", type=int, default=150)
+    parser.add_argument("--commercial", action="store_true", help="train only on voices that allow commercial use")
     args = parser.parse_args()
     random.seed(1)
     np.random.seed(1)
@@ -235,6 +245,7 @@ def main() -> int:
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
+    Sounds.commercial = args.commercial
     train, check = Sounds(Path(args.data), "train"), Sounds(Path(args.data), "check")
     print(f"train: {len(train.pos)} positive, {len(train.neg)} negative; check: {len(check.pos)} / {len(check.neg)}")
 
