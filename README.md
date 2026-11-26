@@ -5,8 +5,8 @@
 The **"Hey Cerebel"** wake word for Cerebel AI's AR glasses. This repo has everything needed to reproduce it: the trained model, the C inference code compiled into the glasses firmware, the training and export scripts, and the full synthetic speech dataset.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/wake-dark.svg">
-  <img src="docs/assets/wake-light.svg" width="100%" alt="Pipeline: waveform, log-mel, TC-ResNet, decision">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/wake-dark.r2.svg">
+  <img src="docs/assets/wake-light.r2.svg" width="100%" alt="Pipeline: waveform, log-mel, TC-ResNet, decision">
 </picture>
 
 <sub><b>Figure 1.</b> <i>“Hey Cerebel”, keyword spotting on a glasses frame.</i> A temporal ResNet over 40 mel bands. The C port that ships in firmware matches PyTorch to six decimal places.</sub>
@@ -36,8 +36,8 @@ The **"Hey Cerebel"** wake word for Cerebel AI's AR glasses. This repo has every
 ## Results
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/results-dark.svg">
-  <img src="docs/assets/results-light.svg" width="100%" alt="Detection rate and false accepts per hour, v1 vs v2">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/results-dark.r2.svg">
+  <img src="docs/assets/results-light.r2.svg" width="100%" alt="Detection rate and false accepts per hour, v1 vs v2">
 </picture>
 
 <sub><b>Figure 2.</b> <i>v2 is better at every threshold.</i> Held-out speakers, 53 minutes of near-homophones and everyday dialogue.</sub>
