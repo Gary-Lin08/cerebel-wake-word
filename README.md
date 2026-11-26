@@ -9,6 +9,9 @@ The **"Hey Cerebel"** wake word for Cerebel AI's AR glasses. This repo has every
   <img src="docs/assets/wake-light.svg" width="100%" alt="Pipeline: waveform, log-mel, TC-ResNet, decision">
 </picture>
 
+<sub><b>Figure 1.</b> <i>“Hey Cerebel”, keyword spotting on a glasses frame.</i> A temporal ResNet over 40 mel bands. The C port that ships in firmware matches PyTorch to six decimal places.</sub>
+
+
 ## Contents
 
 | Path | What it is |
@@ -36,6 +39,9 @@ The **"Hey Cerebel"** wake word for Cerebel AI's AR glasses. This repo has every
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/results-dark.svg">
   <img src="docs/assets/results-light.svg" width="100%" alt="Detection rate and false accepts per hour, v1 vs v2">
 </picture>
+
+<sub><b>Figure 2.</b> <i>v2 is better at every threshold.</i> Held-out speakers, 53 minutes of near-homophones and everyday dialogue.</sub>
+
 
 **v2 (production).** Tested on speakers never seen in training, using 53 min of hard negatives and everyday dialogue.
 
