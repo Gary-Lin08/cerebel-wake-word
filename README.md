@@ -1,20 +1,13 @@
-<p align="center">
-  <img src="docs/assets/banner.svg" width="100%" alt="Hey Cerebel: on-device keyword spotting" />
-</p>
+# Hey Cerebel
 
-<p align="center">
-  <img src="docs/assets/badges/model-tc-resnet-22d3ee.svg" />
-  <img src="docs/assets/badges/params-20k-a78bfa.svg" />
-  <img src="docs/assets/badges/runtime-c-on-glasses-f472b6.svg" />
-  <img src="docs/assets/badges/data-100-25-synthetic-fbbf24.svg" />
-  <img src="docs/assets/badges/code-mit-34d399.svg" />
-</p>
+<sub>Keyword spotting · TC-ResNet, about 20k parameters · C runtime on the glasses · 100% synthetic training data · code under MIT</sub>
 
 The **"Hey Cerebel"** wake word for Cerebel AI's AR glasses. This repo has everything needed to reproduce it: the trained model, the C inference code compiled into the glasses firmware, the training and export scripts, and the full synthetic speech dataset.
 
-<p align="center">
-  <img src="docs/assets/wake-pipeline.svg" width="100%" alt="Pipeline: raw audio, log-mel, TC-ResNet, decision" />
-</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/wake-dark.svg">
+  <img src="docs/assets/wake-light.svg" width="100%" alt="Pipeline: waveform, log-mel, TC-ResNet, decision">
+</picture>
 
 ## Contents
 
@@ -39,9 +32,10 @@ The **"Hey Cerebel"** wake word for Cerebel AI's AR glasses. This repo has every
 
 ## Results
 
-<p align="center">
-  <img src="docs/assets/wake-results.svg" width="100%" alt="Detection rate and false accepts per hour, v1 vs v2" />
-</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/results-dark.svg">
+  <img src="docs/assets/results-light.svg" width="100%" alt="Detection rate and false accepts per hour, v1 vs v2">
+</picture>
 
 **v2 (production).** Tested on speakers never seen in training, using 53 min of hard negatives and everyday dialogue.
 
