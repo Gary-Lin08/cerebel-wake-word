@@ -55,12 +55,12 @@ The **"Hey Cerebel"** wake word for Cerebel AI's AR glasses. This repo has every
 
 False accepts were measured on the hardest possible set, deliberately packed with near-homophones, so everyday speech triggers far less often. On the glasses, the score must also clear the threshold on **two consecutive decisions**, and the cloud then re-verifies every trigger.
 
-## ⚠️ Licensing of the audio
+## Licensing of the audio
 
 The `commercial_use` column in `manifest.csv` marks every clip:
 
-- ✅ **Commercial use OK (with attribution).** LibriTTS-R and VCTK voices, both CC BY 4.0. That is 3,039 positives and 5,455 negatives.
-- ⛔ **Not for commercial use.** That is 260 positives and 3,089 negatives in total:
+- **Commercial use OK (with attribution).** LibriTTS-R and VCTK voices, both CC BY 4.0. That is 3,039 positives and 5,455 negatives.
+- **Not for commercial use.** That is 260 positives and 3,089 negatives in total:
   - macOS system voices: Apple's license allows personal, non-commercial use only.
   - L2-ARCTIC voices: the dataset is CC BY-NC 4.0.
 
