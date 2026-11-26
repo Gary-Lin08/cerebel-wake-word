@@ -1,75 +1,99 @@
-# “Hey Cerebel” 唤醒词：模型 + 数据集
+<p align="center">
+  <img src="docs/assets/banner.svg" width="100%" alt="Hey Cerebel: on-device keyword spotting" />
+</p>
 
-这个仓库里有：
+<p align="center">
+  <img src="docs/assets/badges/model-tc-resnet-22d3ee.svg" />
+  <img src="docs/assets/badges/params-20k-a78bfa.svg" />
+  <img src="docs/assets/badges/runtime-c-on-glasses-f472b6.svg" />
+  <img src="docs/assets/badges/data-100-25-synthetic-fbbf24.svg" />
+  <img src="docs/assets/badges/code-mit-34d399.svg" />
+</p>
 
-| 文件夹 | 内容 |
+The **"Hey Cerebel"** wake word for Cerebel AI's AR glasses. This repo has everything needed to reproduce it: the trained model, the C inference code compiled into the glasses firmware, the training and export scripts, and the full synthetic speech dataset.
+
+<p align="center">
+  <img src="docs/assets/wake-pipeline.svg" width="100%" alt="Pipeline: raw audio, log-mel, TC-ResNet, decision" />
+</p>
+
+## Contents
+
+| Path | What it is |
 |---|---|
-| `model/wake.pt` | **v2**，上市用：只用可商用声音训练（`train.py --commercial`） |
-| `model/v1/` | v1，含不可商用数据，只能内部测试 |
-| `model/wake.pt` 结构 | TC-ResNet，约 2 万参数 |
-| `model/wake_model.h` | 同一个模型导出成 C 数组，眼镜直接编译进 `cerebel-mic` |
-| `model/report.txt` | 在没参与训练的说话人上的成绩 |
-| `code/` | 生成数据、训练、导出、打包的全部脚本，以及眼镜端 C 推理（`wake.c`/`wake.h`）和对照测试 |
-| `dataset/pos/` | 3299 条 “Hey Cerebel”（16 kHz 单声道 WAV） |
-| `dataset/neg/` | 8544 条“不是唤醒词”：近音词（Hey Siri、Isabel、celebrate…）、日常句子、大模型写的 3000 句日常对话 |
-| `dataset/manifest.csv` | 每条音频的标签、由哪个声音念的、该声音的许可、能否商用 |
-| `dataset/negative_sentences.txt` | 负样本里大模型写的句子原文 |
+| `model/wake.pt` | **v2, production model.** Trained only on commercially licensed voices (`train.py --commercial`) |
+| `model/v1/` | v1. Uses non-commercial data, so it is for **internal testing only** |
+| `model/wake_model.h` | The v2 weights exported as a C array, compiled straight into `cerebel-mic` on the glasses |
+| `model/report.txt` | Evaluation on held-out speakers |
+| `code/` | Data generation, training, export and packaging scripts, plus the on-device C inference (`wake.c` / `wake.h`) and a parity test |
+| `dataset/pos/` | 3,299 "Hey Cerebel" clips (16 kHz mono WAV) |
+| `dataset/neg/` | 8,544 negatives: near-homophones (*Hey Siri, Isabel, celebrate…*), everyday sentences, and 3,000 LLM-written casual dialogue lines |
+| `dataset/manifest.csv` | Per-clip label, source voice, voice license, and whether it is cleared for commercial use |
+| `dataset/negative_sentences.txt` | Source text for the LLM-written negatives |
 
-## 怎么做出来的
+## How it was built
 
-- 全部是合成语音：Piper 开源语音合成的三个多人模型（LibriTTS-R 904 人、VCTK 109 人、L2-ARCTIC 24 个非母语说话人），加上 macOS 自带声音；每个说话人用不同语速、随机音色各念几遍。
-- 训练时实时加噪音、房间混响、模拟眼镜小麦克风的频响、音量变化，还把半句 “Hey …” 当反例，避免听到 “Hey” 就触发。
-- 输入：1.5 秒声音的 40 维 log-mel；眼镜上每 50 毫秒判断一次，一次不到 100 万次乘加。
-- 眼镜上的 C 程序与 PyTorch 的分数逐次比对，误差在 0.000004 以内。
+- **All speech is synthetic.** Clips come from three multi-speaker [Piper](https://github.com/rhasspy/piper) TTS models (LibriTTS-R with 904 speakers, VCTK with 109, and L2-ARCTIC with 24 non-native speakers) plus built-in macOS voices. Each speaker is rendered at several speaking rates and random pitch.
+- **Augmented at train time.** Augmentation adds background noise, room reverb, a frequency response modelled on the small glasses microphone, and random gain. Half-phrases ("Hey …") are used as negatives so the model doesn't fire on "Hey" alone.
+- **Input.** 40-dimensional log-mel features over a 1.5 s window. The glasses run one decision every 50 ms, each under 1M multiply-accumulates.
+- **Bit-faithful port.** The C implementation is checked score-by-score against PyTorch, with a maximum absolute difference below **4 × 10⁻⁶**.
 
-## v2 成绩（上市用；没参与训练的说话人，53 分钟难例与日常对话）
+## Results
 
-| 阈值 | 认出 “Hey Cerebel” | 误触发 / 小时 |
+<p align="center">
+  <img src="docs/assets/wake-results.svg" width="100%" alt="Detection rate and false accepts per hour, v1 vs v2" />
+</p>
+
+**v2 (production).** Tested on speakers never seen in training, using 53 min of hard negatives and everyday dialogue.
+
+| Threshold θ | Detection rate | False accepts / hour |
 |---|---|---|
-| 0.8 | 96.3% | 20.3 |
-| 0.85 | 眼镜默认 | |
-| 0.9 | 92.4% | 6.8 |
+| 0.80 | 96.3% | 20.3 |
+| **0.85** | *glasses default* | |
+| 0.90 | 92.4% | 6.8 |
 | 0.95 | 87.8% | 2.3 |
 
-## v1 成绩（没参与训练的说话人，29 分钟）
+**v1.** Tested on speakers never seen in training, 29 min.
 
-| 阈值 | 认出 “Hey Cerebel” | 误触发 / 小时 |
+| Threshold θ | Detection rate | False accepts / hour |
 |---|---|---|
-| 0.8 | 93.1% | 53.5 |
-| 0.9 | 89.1% | 30.9 |
+| 0.80 | 93.1% | 53.5 |
+| 0.90 | 89.1% | 30.9 |
 
-误触发是在“故意塞满近音词”的最难测试上测的，日常说话会少很多；眼镜上还要求连续两次判断都过线，最后由云端再复核一遍。
+False accepts were measured on the hardest possible set, deliberately packed with near-homophones, so everyday speech triggers far less often. On the glasses, the score must also clear the threshold on **two consecutive decisions**, and the cloud then re-verifies every trigger.
 
-## ⚠️ 商用许可
+## ⚠️ Licensing of the audio
 
-`manifest.csv` 的 `commercial_use` 一列标了每条能不能商用：
+The `commercial_use` column in `manifest.csv` marks every clip:
 
-- **可以商用**（注明出处）：LibriTTS-R、VCTK 声音念的，CC BY 4.0。正样本 3039 条、负样本 5455 条。
-- **不能商用**：
-  - macOS 自带声音：苹果许可只允许个人、非商业使用。
-  - L2-ARCTIC 声音：数据集是 CC BY-NC 4.0。
-  - 共计正样本 260 条、负样本 3089 条。
+- ✅ **Commercial use OK (with attribution).** LibriTTS-R and VCTK voices, both CC BY 4.0. That is 3,039 positives and 5,455 negatives.
+- ⛔ **Not for commercial use.** That is 260 positives and 3,089 negatives in total:
+  - macOS system voices: Apple's license allows personal, non-commercial use only.
+  - L2-ARCTIC voices: the dataset is CC BY-NC 4.0.
 
-**v1 用到了不能商用的数据，只能内部测试；`model/` 里的 v2 只用了可商用数据。** 数据集本身仍包含全部音频，用 `manifest.csv` 筛选。以上许可是根据我对这些项目许可的了解整理的，正式上市前请法务核实。
+**v1 was trained on non-commercial data and is for internal testing only. The v2 model in `model/` uses commercial-safe data only.** The dataset still contains every clip; filter with `manifest.csv`. This summary reflects my reading of each project's license. Have it reviewed by counsel before a commercial launch.
 
-## 下一步要补的数据
-
-最能提升效果的是**真人用眼镜麦克风录的 “Hey Cerebel”**：不同人、不同距离、不同语气、有噪音的环境，每人 20～50 遍；再录几个小时戴着眼镜的日常对话做反例。
-
-## 出处（CC BY 4.0 要求注明）
-
-- 语音合成：[Piper](https://github.com/rhasspy/piper)（MIT），声音模型来自 [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices)。
-- LibriTTS-R：Koizumi et al., 2023，CC BY 4.0。
-- VCTK：CSTR, University of Edinburgh，CC BY 4.0。
-- L2-ARCTIC：Zhao et al., 2018，CC BY-NC 4.0（不可商用）。
-
-## 用法
+## Usage
 
 ```bash
-python code/gen_data.py data                  # 生成正样本和近音词反例（需要 piper-tts 和声音模型）
-python code/gen_negatives.py data             # 让本地大模型写日常句子，再合成反例
-python code/train.py data out --commercial    # 只用可商用数据训练
-python code/export.py out test.wav            # 导出 C 权重，并输出对照分数
+python code/gen_data.py data                  # positives + near-homophone negatives (needs piper-tts and voice models)
+python code/gen_negatives.py data             # a local LLM writes everyday sentences, then they are synthesized as negatives
+python code/train.py data out --commercial    # train on commercial-safe voices only
+python code/export.py out test.wav            # export C weights and print parity scores
 ```
 
-眼镜端：把 `wake_model.h` 放进 `cerebel_shell/include/`，重新编译 `cerebel-mic`（主仓库 `cerebel-ar-glasses`）。
+**On the glasses.** Copy `wake_model.h` into `cerebel_shell/include/` and rebuild `cerebel-mic` (in the private firmware repo).
+
+## What would help most next
+
+**Real recordings of "Hey Cerebel" through the glasses microphone.** Ideally different people, distances, tones and noisy environments, about 20 to 50 takes per person, plus a few hours of everyday conversation recorded while wearing the glasses to use as negatives.
+
+## Attribution (required by CC BY 4.0)
+
+- Speech synthesis: [Piper](https://github.com/rhasspy/piper) (MIT), voices from [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices).
+- LibriTTS-R: Koizumi et al., 2023, CC BY 4.0.
+- VCTK: CSTR, University of Edinburgh, CC BY 4.0.
+- L2-ARCTIC: Zhao et al., 2018, CC BY-NC 4.0 (non-commercial).
+
+## License
+
+The code in `code/` is released under the [MIT License](LICENSE). The audio in `dataset/` keeps the license of the voice that produced it (see `manifest.csv`), and the models inherit the restrictions of the data they were trained on.
